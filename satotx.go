@@ -9,6 +9,11 @@ func hasSensibleFlag(pkScript []byte) bool {
 	return bytes.HasSuffix(pkScript, []byte("sensible")) || bytes.HasSuffix(pkScript, []byte("oraclesv"))
 }
 
+func hasMetaContractFlag(pkScript []byte) bool {
+	script := pkScript[:len(pkScript)-5]
+	return bytes.HasSuffix(script, []byte("metacontract"))
+}
+
 func DecodeSensibleTxo(pkScript []byte, txo *TxoData) bool {
 	scriptLen := len(pkScript)
 	if scriptLen < 1024 {
@@ -16,13 +21,14 @@ func DecodeSensibleTxo(pkScript []byte, txo *TxoData) bool {
 	}
 
 	ret := false
-	if hasSensibleFlag(pkScript) {
-		protoTypeOffset := scriptLen - 8 - 4
+	if hasMetaContractFlag(pkScript) {
+		// 偏移长度5，偏移metacontract 12
+		protoTypeOffset := scriptLen - 5 - 12 - 4
 		protoType := binary.LittleEndian.Uint32(pkScript[protoTypeOffset : protoTypeOffset+4])
 
 		switch protoType {
 		case CodeType_FT:
-			ret = decodeFT(scriptLen, pkScript, txo)
+			ret = decodeMvcFT(scriptLen, pkScript, txo)
 
 		case CodeType_UNIQUE:
 			ret = decodeUniqueV2(scriptLen, pkScript, txo)
