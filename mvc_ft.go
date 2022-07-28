@@ -3,6 +3,8 @@ package script
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
+	"fmt"
 )
 
 //decodeMvcFT
@@ -25,7 +27,7 @@ func decodeMvcFT(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	dataLen := 40 + 20 + 1 + 20 + 8 + 20 + 36 + 4 + 4 + 12 + 4 + 1
 	protoVersionLen := 4
 	protoTypeLen := 4
-	genesisIdLen := 20
+	genesisHashLen := 20
 	addressLen := 20
 	sensibleIdLen := 36
 	decimalLen := 1
@@ -42,7 +44,7 @@ func decodeMvcFT(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	}
 	protoTypeOffset := scriptLen - 17 - protoTypeLen
 	sensibleOffset := protoTypeOffset - protoVersionLen - sensibleIdLen
-	genesisOffset := sensibleOffset - genesisIdLen
+	genesisOffset := sensibleOffset - genesisHashLen
 	amountOffset := genesisOffset - amountLen
 	addressOffset := amountOffset - addressLen
 	decimalOffset := addressOffset - decimalLen
@@ -62,11 +64,18 @@ func decodeMvcFT(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	txo.HasAddress = true
 	copy(txo.AddressPkh[:], pkScript[addressOffset:addressOffset+addressLen])
 
-	copy(txo.CodeHash[:], GetHash160(pkScript[:scriptLen-dataLen]))
+	// code 部分=总长-push数-op return操作符
+	copy(txo.CodeHash[:], GetHash160(pkScript[:scriptLen-dataLen-1-1]))
 	ft.SensibleId = make([]byte, sensibleIdLen)
 	copy(ft.SensibleId, pkScript[sensibleOffset:sensibleOffset+sensibleIdLen])
 
-	txo.GenesisIdLen = uint8(genesisIdLen)
-	copy(txo.GenesisId[:], pkScript[genesisOffset:genesisOffset+genesisIdLen])
+	// GenesisId: hash160(<genesisHash(20 bytes)> + <sensibleID(36 bytes)>)
+	txo.GenesisIdLen = 20
+	genesisPreHash := make([]byte, sensibleIdLen+genesisHashLen)
+	copy(genesisPreHash[:genesisHashLen], pkScript[genesisOffset:genesisOffset+genesisHashLen])
+	copy(genesisPreHash[genesisHashLen:], pkScript[sensibleOffset:sensibleOffset+sensibleIdLen])
+	fmt.Println(hex.EncodeToString(genesisPreHash))
+	copy(txo.GenesisId[:], GetHash160(genesisPreHash))
+
 	return true
 }
