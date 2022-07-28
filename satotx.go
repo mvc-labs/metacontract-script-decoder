@@ -5,16 +5,12 @@ import (
 	"encoding/binary"
 )
 
-func hasSensibleFlag(pkScript []byte) bool {
-	return bytes.HasSuffix(pkScript, []byte("sensible")) || bytes.HasSuffix(pkScript, []byte("oraclesv"))
-}
-
 func hasMetaContractFlag(pkScript []byte) bool {
 	script := pkScript[:len(pkScript)-5]
 	return bytes.HasSuffix(script, []byte("metacontract"))
 }
 
-func DecodeSensibleTxo(pkScript []byte, txo *TxoData) bool {
+func DecodeMvcTxo(pkScript []byte, txo *TxoData) bool {
 	scriptLen := len(pkScript)
 	if scriptLen < 1024 {
 		return false
@@ -97,13 +93,13 @@ func ExtractPkScriptForTxo(pkScript, scriptType []byte) (txo *TxoData) {
 	// }
 
 	if IsOpreturn(scriptType) {
-		if hasSensibleFlag(pkScript) {
+		if hasMetaContractFlag(pkScript) {
 			txo.CodeType = CodeType_SENSIBLE
 		}
 		return txo
 	}
 
-	DecodeSensibleTxo(pkScript, txo)
+	DecodeMvcTxo(pkScript, txo)
 
 	return txo
 }

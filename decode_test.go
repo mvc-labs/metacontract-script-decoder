@@ -31,7 +31,7 @@ func TestDecode(t *testing.T) {
 
 		txo := &TxoData{}
 
-		DecodeSensibleTxo(script, txo)
+		DecodeMvcTxo(script, txo)
 
 		data, _ := json.Marshal(txo)
 		t.Logf("scriptLen: %d, txo: %s", len(script), strings.ReplaceAll(string(data), ",", "\n"))
