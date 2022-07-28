@@ -63,10 +63,10 @@ func decodeMvcFT(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	copy(txo.AddressPkh[:], pkScript[addressOffset:addressOffset+addressLen])
 
 	copy(txo.CodeHash[:], GetHash160(pkScript[:scriptLen-dataLen]))
-	ft.SensibleId = make([]byte, genesisIdLen)
-	copy(ft.SensibleId, pkScript[genesisOffset:genesisOffset+genesisIdLen])
+	ft.SensibleId = make([]byte, sensibleIdLen)
+	copy(ft.SensibleId, pkScript[sensibleOffset:sensibleOffset+sensibleIdLen])
 
 	txo.GenesisIdLen = uint8(genesisIdLen)
-	copy(txo.GenesisId[:], ft.SensibleId)
+	copy(txo.GenesisId[:], pkScript[genesisOffset:genesisOffset+genesisIdLen])
 	return true
 }
