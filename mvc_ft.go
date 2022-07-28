@@ -5,52 +5,57 @@ import (
 	"encoding/binary"
 )
 
+//decodeMvcFT
+// <op_pushdata> + <type specific data> + <proto header> + <data_len(4 bytes)> + <version(1 bytes)>
+// <proto header> = <proto_version(4 bytes)> + <proto_type(4 bytes)> + <'metacontract'(12 bytes)>
+// <token type specific data> = <name(40 bytes)> + <symbol(20 bytes)> + <decimal(1 bytes)> + <address(20 bytes)> + <token amount(8 bytes)> + <genesisHash(20 bytes)> + <sensibleID(36 bytes)>
 func decodeMvcFT(scriptLen int, pkScript []byte, txo *TxoData) bool {
-	dataLen := 0
-	protoVersionLen := 0
-	genesisIdLen := 0
-	sensibleIdLen := 0
-	useTokenIdHash := false
-	if pkScript[scriptLen-109-1-1-1] == OP_RETURN &&
-		pkScript[scriptLen-109-1-1] == 0x4c &&
-		pkScript[scriptLen-109-1] == 0x6d {
-		// <address(20 bytes)> +
-		//<token amount(8 bytes)> +
-		//<genesisHash(20 bytes)> +
-		//<sensibleID(36 bytes)> +
-		//<proto_version(4 bytes)> +
-		//<proto_type(4 bytes)> +
-		//<'metacontract'(12 bytes)> +
-		//<dataLen(4 bytes)> +
-		//<flag(1 bytes)>
-		protoVersionLen = 4
-		genesisIdLen = 20
-		sensibleIdLen = 36
-		dataLen = 1 + 1 + 76 + genesisIdLen // 0x4c + pushdata + data + genesisId
-		useTokenIdHash = true
-	} else {
+	//<name(40 bytes)> +
+	//<symbol(20 bytes)> +
+	//<decimal(1 bytes)> +
+	//<address(20 bytes)> +
+	//<token amount(8 bytes)> +
+	//<genesisHash(20 bytes)> +
+	//<sensibleID(36 bytes)> +
+	//<proto_version(4 bytes)> +
+	//<proto_type(4 bytes)> +
+	//<'metacontract'(12 bytes)>+
+	//<data_len(4 bytes)> +
+	//<version(1 bytes)>
+	dataLen := 40 + 20 + 1 + 20 + 8 + 20 + 36 + 4 + 4 + 12 + 4 + 1
+	protoVersionLen := 4
+	protoTypeLen := 4
+	genesisIdLen := 20
+	addressLen := 20
+	sensibleIdLen := 36
+	decimalLen := 1
+	symbolLen := 20
+	nameLen := 40
+	amountLen := 8
+
+	if !(pkScript[scriptLen-dataLen-1-1-1] == OP_RETURN &&
+		pkScript[scriptLen-dataLen-1-1] == 0x4c &&
+		pkScript[scriptLen-dataLen-1] == 0xaa) {
 		// error ft
 		return false
+
 	}
-
-	protoTypeOffset := scriptLen - 17 - 4
+	protoTypeOffset := scriptLen - 17 - protoTypeLen
 	sensibleOffset := protoTypeOffset - protoVersionLen - sensibleIdLen
-
-	genesisOffset := protoTypeOffset - protoVersionLen - genesisIdLen
-	amountOffset := genesisOffset - 8
-	addressOffset := amountOffset - 20
-	// todo
-	decimalOffset := addressOffset - 1
-	symbolOffset := decimalOffset - 1 - 10
-	nameOffset := symbolOffset - 20
+	genesisOffset := sensibleOffset - genesisIdLen
+	amountOffset := genesisOffset - amountLen
+	addressOffset := amountOffset - addressLen
+	decimalOffset := addressOffset - decimalLen
+	symbolOffset := decimalOffset - symbolLen
+	nameOffset := symbolOffset - nameLen
 
 	txo.CodeType = CodeType_FT
 
 	ft := &FTData{
 		Decimal: uint8(pkScript[decimalOffset]),
-		Symbol:  string(bytes.TrimRight(pkScript[symbolOffset:symbolOffset+10], "\x00")),
-		Name:    string(bytes.TrimRight(pkScript[nameOffset:nameOffset+20], "\x00")),
-		Amount:  binary.LittleEndian.Uint64(pkScript[amountOffset : amountOffset+8]),
+		Symbol:  string(bytes.TrimRight(pkScript[symbolOffset:symbolOffset+symbolLen], "\x00")),
+		Name:    string(bytes.TrimRight(pkScript[nameOffset:nameOffset+nameLen], "\x00")),
+		Amount:  binary.LittleEndian.Uint64(pkScript[amountOffset : amountOffset+amountLen]),
 	}
 	txo.FT = ft
 
@@ -58,19 +63,10 @@ func decodeMvcFT(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	copy(txo.AddressPkh[:], pkScript[addressOffset:addressOffset+20])
 
 	copy(txo.CodeHash[:], GetHash160(pkScript[:scriptLen-dataLen]))
-	if useTokenIdHash {
-		ft.SensibleId = make([]byte, sensibleIdLen)
-		copy(ft.SensibleId, pkScript[sensibleOffset:sensibleOffset+sensibleIdLen])
+	ft.SensibleId = make([]byte, genesisIdLen)
+	copy(ft.SensibleId, pkScript[genesisOffset:genesisOffset+genesisIdLen])
 
-		// GenesisId is tokenIdHash
-		txo.GenesisIdLen = 20
-		copy(txo.GenesisId[:], GetHash160(pkScript[genesisOffset:genesisOffset+genesisIdLen]))
-	} else {
-		ft.SensibleId = make([]byte, genesisIdLen)
-		copy(ft.SensibleId, pkScript[genesisOffset:genesisOffset+genesisIdLen])
-
-		txo.GenesisIdLen = uint8(genesisIdLen)
-		copy(txo.GenesisId[:], ft.SensibleId)
-	}
+	txo.GenesisIdLen = uint8(genesisIdLen)
+	copy(txo.GenesisId[:], ft.SensibleId)
 	return true
 }
