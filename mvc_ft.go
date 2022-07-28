@@ -3,8 +3,6 @@ package script
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/hex"
-	"fmt"
 )
 
 //decodeMvcFT
@@ -74,8 +72,6 @@ func decodeMvcFT(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	genesisPreHash := make([]byte, sensibleIdLen+genesisHashLen)
 	copy(genesisPreHash[:genesisHashLen], pkScript[genesisOffset:genesisOffset+genesisHashLen])
 	copy(genesisPreHash[genesisHashLen:], pkScript[sensibleOffset:sensibleOffset+sensibleIdLen])
-	fmt.Println(hex.EncodeToString(genesisPreHash))
 	copy(txo.GenesisId[:], GetHash160(genesisPreHash))
-
 	return true
 }
