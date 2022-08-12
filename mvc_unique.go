@@ -5,23 +5,20 @@ import (
 	"encoding/binary"
 )
 
-//decodeMvcFT
+// decodeMvcUnique
 // <op_pushdata> + <type specific data> + <proto header> + <data_len(4 bytes)> + <version(1 bytes)>
 // <proto header> = <proto_version(4 bytes)> + <proto_type(4 bytes)> + <'metacontract'(12 bytes)>
-// <token type specific data> = <name(40 bytes)> + <symbol(20 bytes)> + <decimal(1 bytes)> + <address(20 bytes)> + <token amount(8 bytes)> + <genesisHash(20 bytes)> + <sensibleID(36 bytes)>
-func decodeMvcFT(scriptLen int, pkScript []byte, txo *TxoData) bool {
-	//<name(40 bytes)> +
-	//<symbol(20 bytes)> +
-	//<decimal(1 bytes)> +
-	//<address(20 bytes)> +
-	//<token amount(8 bytes)> +
-	//<genesisHash(20 bytes)> +
-	//<sensibleID(36 bytes)> +
+// <unique type specific data> = <unique custom data> + <custom data length(4 bytes)> + <genesisTxid(36 bytes)>
+func decodeMvcUnique(scriptLen int, pkScript []byte, txo *TxoData) bool {
+	//<unique custom data> +
+	//<custom data length(4 bytes)> +
+	//<genesisTxid(36 bytes)> +
 	//<proto_version(4 bytes)> +
 	//<proto_type(4 bytes)> +
 	//<'metacontract'(12 bytes)>+
 	//<data_len(4 bytes)> +
 	//<version(1 bytes)>
+	dataLen := 40 + 20 + 1 + 20 + 8 + 20 + 36 + 4 + 4 + 12 + 4 + 1
 	protoVersionLen := 4
 	protoTypeLen := 4
 	genesisHashLen := 20
@@ -31,11 +28,10 @@ func decodeMvcFT(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	symbolLen := 20
 	nameLen := 40
 	amountLen := 8
-	dataLen := nameLen + symbolLen + decimalLen + addressLen + amountLen + genesisHashLen + sensibleIdLen + protoTypeLen + protoVersionLen + 12 + 4 + 1
 
 	if !(pkScript[scriptLen-dataLen-1-1-1] == OP_RETURN &&
 		pkScript[scriptLen-dataLen-1-1] == 0x4c &&
-		pkScript[scriptLen-dataLen-1] == byte(dataLen)) {
+		pkScript[scriptLen-dataLen-1] == 0xaa) {
 		// error ft
 		return false
 
@@ -49,7 +45,7 @@ func decodeMvcFT(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	symbolOffset := decimalOffset - symbolLen
 	nameOffset := symbolOffset - nameLen
 
-	txo.CodeType = CodeType_FT
+	txo.CodeType = CodeType_UNIQUE
 
 	ft := &FTData{
 		Decimal: uint8(pkScript[decimalOffset]),
