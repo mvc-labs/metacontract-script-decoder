@@ -50,10 +50,6 @@ func decodeMvcUnique(scriptLen int, pkScript []byte, txo *TxoData) bool {
 
 	// GenesisId: hash160(<genesisHash(20 bytes)> + <sensibleID(36 bytes)>)
 	txo.GenesisIdLen = 20
-	// todo genesisId Calculation
-	//genesisPreHash := make([]byte, sensibleIdLen+genesisHashLen)
-	//copy(genesisPreHash[:genesisHashLen], pkScript[genesisOffset:genesisOffset+genesisHashLen])
-	//copy(genesisPreHash[genesisHashLen:], pkScript[sensibleOffset:sensibleOffset+sensibleIdLen])
-	//copy(txo.GenesisId[:], GetHash160(genesisPreHash))
+	copy(txo.GenesisId[:], GetHash160(unique.SensibleId))
 	return true
 }
