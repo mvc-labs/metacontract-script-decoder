@@ -27,10 +27,7 @@ func DecodeMvcTxo(pkScript []byte, txo *TxoData) bool {
 			ret = decodeMvcFT(scriptLen, pkScript, txo)
 
 		case CodeType_UNIQUE:
-			ret = decodeUniqueV2(scriptLen, pkScript, txo)
-			if !ret {
-				ret = decodeUnique(scriptLen, pkScript, txo)
-			}
+			ret = decodeMvcUnique(scriptLen, pkScript, txo)
 
 		case CodeType_NFT:
 			ret = decodeMvcNFT(scriptLen, pkScript, txo)

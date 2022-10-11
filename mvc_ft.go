@@ -52,7 +52,7 @@ func decodeMvcFT(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	txo.CodeType = CodeType_FT
 
 	ft := &FTData{
-		Decimal: uint8(pkScript[decimalOffset]),
+		Decimal: pkScript[decimalOffset],
 		Symbol:  string(bytes.TrimRight(pkScript[symbolOffset:symbolOffset+symbolLen], "\x00")),
 		Name:    string(bytes.TrimRight(pkScript[nameOffset:nameOffset+nameLen], "\x00")),
 		Amount:  binary.LittleEndian.Uint64(pkScript[amountOffset : amountOffset+amountLen]),

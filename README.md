@@ -12,7 +12,9 @@ Locking script decoder for Mvc Contract
 
 # 使用方法
 
-参见 [satoblock/task/serial/tx.go](https://github.com/metasv/satoblock/blob/8138d70eeef8bb7c726b5482090dc9191cc53aa2/task/serial/tx.go#L114)
+参见测试用例 [decode_test.go](https://github.com/MetaverseChain/metacontract-script-decoder/blob/master/decode_test.go)
+
+将对应的锁定脚本放置在test.txt 中，然后调用decode_test。打印解析出来的合约来测试解码结果
 
 ```golang
 	import (
