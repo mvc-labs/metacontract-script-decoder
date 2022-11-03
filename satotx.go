@@ -6,6 +6,9 @@ import (
 )
 
 func hasMetaContractFlag(pkScript []byte) bool {
+	if len(pkScript) < 6 {
+		return false
+	}
 	script := pkScript[:len(pkScript)-5]
 	return bytes.HasSuffix(script, []byte("metacontract"))
 }
