@@ -22,7 +22,6 @@ func decodeMvcFT(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	//<'metacontract'(12 bytes)>+
 	//<data_len(4 bytes)> +
 	//<version(1 bytes)>
-	dataLen := 40 + 20 + 1 + 20 + 8 + 20 + 36 + 4 + 4 + 12 + 4 + 1
 	protoVersionLen := 4
 	protoTypeLen := 4
 	genesisHashLen := 20
@@ -32,10 +31,11 @@ func decodeMvcFT(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	symbolLen := 20
 	nameLen := 40
 	amountLen := 8
+	dataLen := nameLen + symbolLen + decimalLen + addressLen + amountLen + genesisHashLen + sensibleIdLen + protoTypeLen + protoVersionLen + 12 + 4 + 1
 
 	if !(pkScript[scriptLen-dataLen-1-1-1] == OP_RETURN &&
 		pkScript[scriptLen-dataLen-1-1] == 0x4c &&
-		pkScript[scriptLen-dataLen-1] == 0xaa) {
+		pkScript[scriptLen-dataLen-1] == byte(dataLen)) {
 		// error ft
 		return false
 
@@ -52,7 +52,7 @@ func decodeMvcFT(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	txo.CodeType = CodeType_FT
 
 	ft := &FTData{
-		Decimal: uint8(pkScript[decimalOffset]),
+		Decimal: pkScript[decimalOffset],
 		Symbol:  string(bytes.TrimRight(pkScript[symbolOffset:symbolOffset+symbolLen], "\x00")),
 		Name:    string(bytes.TrimRight(pkScript[nameOffset:nameOffset+nameLen], "\x00")),
 		Amount:  binary.LittleEndian.Uint64(pkScript[amountOffset : amountOffset+amountLen]),
