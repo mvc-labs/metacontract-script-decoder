@@ -36,7 +36,7 @@ func DecodeMvcTxo(pkScript []byte, txo *TxoData) bool {
 			ret = decodeMvcNFT(scriptLen, pkScript, txo)
 
 		case CodeType_NFT_SELL:
-			ret = decodeNFTSell(scriptLen, pkScript, txo)
+			ret = decodeMvcNFTSell(scriptLen, pkScript, txo)
 		case CodeType_NFT_SELL_V2:
 			ret = decodeNFTSellV2(scriptLen, pkScript, txo)
 		case CodeType_NFT_AUCTION:
