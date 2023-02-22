@@ -25,7 +25,7 @@ func decodeMvcNFTSell(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	codeHashLen := 20
 	protoVersionLen := 4
 	protoTypeLen := 4
-	dataLen := codeHashLen + genesisHashLen + tokenIndexLen + sellerAddressLen + satoshiPriceLen + nftIdLen + protoTypeLen + protoVersionLen + 12 + 4 + 1
+	dataLen := codeHashLen + genesisHashLen + tokenIndexLen + sellerAddressLen + satoshiPriceLen + nftIdLen + protoVersionLen + protoTypeLen + +12 + 4 + 1
 	// check size
 	if !(pkScript[scriptLen-dataLen-1-1-1] == OP_RETURN &&
 		pkScript[scriptLen-dataLen-1-1] == 0x4c &&
@@ -34,7 +34,7 @@ func decodeMvcNFTSell(scriptLen int, pkScript []byte, txo *TxoData) bool {
 		return false
 	}
 
-	protoVersionOffset := scriptLen - 17 - protoTypeLen
+	protoVersionOffset := scriptLen - 17 - protoTypeLen - protoVersionLen
 	nftIdOffset := protoVersionOffset - nftIdLen
 	priceOffset := nftIdOffset - satoshiPriceLen
 	addressOffset := priceOffset - sellerAddressLen
