@@ -15,9 +15,6 @@ func hasMetaContractFlag(pkScript []byte) bool {
 
 func DecodeMvcTxo(pkScript []byte, txo *TxoData) bool {
 	scriptLen := len(pkScript)
-	if scriptLen < 1024 {
-		return false
-	}
 
 	ret := false
 	if hasMetaContractFlag(pkScript) {
