@@ -34,27 +34,10 @@ func DecodeMvcTxo(pkScript []byte, txo *TxoData) bool {
 
 		case CodeType_NFT_SELL:
 			ret = decodeMvcNFTSell(scriptLen, pkScript, txo)
-		case CodeType_NFT_SELL_V2:
-			ret = decodeNFTSellV2(scriptLen, pkScript, txo)
-		case CodeType_NFT_AUCTION:
-			ret = decodeNFTAuction(scriptLen, pkScript, txo)
 		default:
 			ret = false
 		}
 		return ret
-	}
-
-	if pkScript[scriptLen-1] < 2 &&
-		pkScript[scriptLen-37-1] == 37 &&
-		pkScript[scriptLen-37-1-40-1] == 40 &&
-		pkScript[scriptLen-37-1-40-1-1] == OP_RETURN {
-		ret = decodeNFTIssue(scriptLen, pkScript, txo)
-
-	} else if pkScript[scriptLen-1] == 1 &&
-		pkScript[scriptLen-61-1] == 61 &&
-		pkScript[scriptLen-61-1-40-1] == 40 &&
-		pkScript[scriptLen-61-1-40-1-1] == OP_RETURN {
-		ret = decodeNFTTransfer(scriptLen, pkScript, txo)
 	}
 
 	return ret
