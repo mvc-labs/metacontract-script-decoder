@@ -53,7 +53,7 @@ func decodeMvcNFT(scriptLen int, pkScript []byte, txo *TxoData) bool {
 		TokenIndex:  binary.LittleEndian.Uint64(pkScript[tokenIndexOffset : tokenIndexOffset+8]),
 	}
 	txo.NFT = nft
-	// code 部分=总长-push数-op return操作符
+	// code 部分=总长-push数
 	copy(txo.CodeHash[:], GetHash160(pkScript[:scriptLen-dataLen-1-1]))
 	copy(nft.SensibleId, pkScript[sensibleOffset:sensibleOffset+sensibleIdLen])
 
