@@ -1,6 +1,8 @@
 package script
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+)
 
 // asSmallInt returns the passed opcode, which must be true according to
 // isSmallInt(), as an integer.
@@ -157,4 +159,37 @@ func GetLockingScriptStatePosition(pkScript []byte) (pc int, ok bool) {
 	}
 
 	return pc + 1, true
+}
+
+// GetOpPushTypeByDataSize returns the opcode for the given data length.
+func GetOpPushTypeByDataSize(dataLength int) int {
+	if dataLength >= 1 && dataLength <= 75 {
+		return dataLength
+	} else if dataLength >= 76 && dataLength <= 255 {
+		return OP_PUSHDATA1
+	} else if dataLength >= 256 && dataLength <= 65535 {
+		return OP_PUSHDATA2
+	} else if dataLength >= 65536 {
+		return OP_PUSHDATA4
+	}
+	return 0
+}
+
+// GetOpPushByteLength decides the length of bytes indicating the data length
+func GetOpPushByteLength(opCode int) int {
+	opPushByteLen := 0
+	switch opCode {
+	case OP_PUSHDATA1:
+		opPushByteLen = 1
+		break
+	case OP_PUSHDATA2:
+		opPushByteLen = 2
+		break
+	case OP_PUSHDATA4:
+		opPushByteLen = 4
+		break
+	default:
+		break
+	}
+	return opPushByteLen
 }

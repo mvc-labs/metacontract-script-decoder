@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 )
 
-//decodeMvcFT
+// decodeMvcFT
 // <op_pushdata> + <type specific data> + <proto header> + <data_len(4 bytes)> + <version(1 bytes)>
 // <proto header> = <proto_version(4 bytes)> + <proto_type(4 bytes)> + <'metacontract'(12 bytes)>
 // <token type specific data> = <name(40 bytes)> + <symbol(20 bytes)> + <decimal(1 bytes)> + <address(20 bytes)> + <token amount(8 bytes)> + <genesisHash(20 bytes)> + <sensibleID(36 bytes)>
@@ -62,7 +62,7 @@ func decodeMvcFT(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	txo.HasAddress = true
 	copy(txo.AddressPkh[:], pkScript[addressOffset:addressOffset+addressLen])
 
-	// code 部分=总长-push数-op return操作符
+	// code 部分=总长-push数
 	copy(txo.CodeHash[:], GetHash160(pkScript[:scriptLen-dataLen-1-1]))
 	ft.SensibleId = make([]byte, sensibleIdLen)
 	copy(ft.SensibleId, pkScript[sensibleOffset:sensibleOffset+sensibleIdLen])

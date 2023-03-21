@@ -24,8 +24,12 @@ func decodeMvcUnique(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	protoVersionLen := 4
 	protoTypeLen := 4
 	sensibleIdLen := 36
-	if !(pkScript[scriptLen-totalDataLen-1-1-1] == OP_RETURN &&
-		pkScript[scriptLen-totalDataLen-1] == byte(totalDataLen)) {
+
+	// check data length and op_return code
+	// decide push data length
+	pushType := GetOpPushTypeByDataSize(totalDataLen)
+	opPushByteLen := GetOpPushByteLength(pushType)
+	if !checkOpReturnPositionAndDataLength(scriptLen, pkScript, totalDataLen, pushType, opPushByteLen) {
 		return false
 	}
 	protoTypeOffset := scriptLen - 17 - protoTypeLen
@@ -44,11 +48,43 @@ func decodeMvcUnique(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	unique.CustomData = make([]byte, customDataSize)
 	copy(unique.CustomData, pkScript[customDataOffset:customDataOffset+customDataSize])
 
-	// code 部分=总长-push数-op return操作符
-	copy(txo.CodeHash[:], GetHash160(pkScript[:scriptLen-totalDataLen-1-1]))
+	// code 部分=总长-totalDataLen-pushCode-pushSizeBytes-opReturn
+	copy(txo.CodeHash[:], GetHash160(pkScript[:scriptLen-totalDataLen-1-opPushByteLen]))
 
 	// GenesisId: hash160(<genesisHash(20 bytes)> + <sensibleID(36 bytes)>)
 	txo.GenesisIdLen = 20
 	copy(txo.GenesisId[:], GetHash160(unique.SensibleId))
+	return true
+}
+
+// checkOpReturnPositionAndDataLength check op_return position and data length, true if ok
+func checkOpReturnPositionAndDataLength(scriptLen int, pkScript []byte, totalDataLen, pushType, opPushByteLen int) bool {
+	// op_return op_pushdata_op data_len_byte data
+	if !(pkScript[scriptLen-totalDataLen-1-opPushByteLen-1] == OP_RETURN) {
+		return false
+	}
+	lengthBytes := pkScript[scriptLen-totalDataLen-opPushByteLen : scriptLen-totalDataLen]
+	switch opPushByteLen {
+	case 0:
+		if pushType != totalDataLen {
+			return false
+		}
+		break
+	case 1:
+		if int(lengthBytes[0]) != totalDataLen {
+			return false
+		}
+		break
+	case 2:
+		if int(binary.LittleEndian.Uint16(lengthBytes)) != totalDataLen {
+			return false
+		}
+		break
+	case 4:
+		if int(binary.LittleEndian.Uint32(lengthBytes)) != totalDataLen {
+			return false
+		}
+		break
+	}
 	return true
 }
