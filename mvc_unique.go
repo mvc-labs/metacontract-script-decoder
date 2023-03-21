@@ -25,7 +25,6 @@ func decodeMvcUnique(scriptLen int, pkScript []byte, txo *TxoData) bool {
 	protoTypeLen := 4
 	sensibleIdLen := 36
 	if !(pkScript[scriptLen-totalDataLen-1-1-1] == OP_RETURN &&
-		pkScript[scriptLen-totalDataLen-1-1] == 0x4c &&
 		pkScript[scriptLen-totalDataLen-1] == byte(totalDataLen)) {
 		return false
 	}
