@@ -18,7 +18,7 @@ Locking script decoder for Mvc Contract
 
 ```golang
 	import (
-		scriptDecoder "github.com/metasv/metacontract-script-decoder"
+		scriptDecoder "github.com/mvc-labs/metacontract-script-decoder"
 	)
 
 	d.ScriptType = scriptDecoder.GetLockingScriptType(d.Script)

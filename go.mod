@@ -1,4 +1,4 @@
-module github.com/metasv/metacontract-script-decoder
+module github.com/mvc-labs/metacontract-script-decoder
 
 go 1.16
 
